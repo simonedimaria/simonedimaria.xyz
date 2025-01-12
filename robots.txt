@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://simonedimaria.github.io/sitemap.xml
