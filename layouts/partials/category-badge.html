@@ -1,0 +1,39 @@
+{{/* layouts/partials/category-badge.html */}}
+{{- $cat := . | lower -}}
+
+{{/* Map category values to a Tailwind background color and an emoji. */}}
+{{- $bgColors := dict
+"web"         "bg-blue-700"
+"blockchain"  "bg-amber-700"
+"pwn"         "bg-rose-700"
+"forensics"   "bg-green-700"
+"reversing"   "bg-indigo-700"
+"misc"        "bg-purple-700"
+"hardware"    "bg-orange-700"
+"mobile"      "bg-teal-700"
+"cloud"       "bg-cyan-700"
+"fullpwn"     "bg-red-700"
+-}}
+
+{{- $emojiDict := dict
+"web"         "🌐"
+"blockchain"  "🔗"
+"pwn"         "👾"
+"forensics"   "🕵️"
+"reversing"   "🧩"
+"misc"        "🎲"
+"hardware"    "🛠️"
+"mobile"      "📱"
+"cloud"       "☁️"
+"fullpwn"     "👑"
+-}}
+
+{{- $bgClass := index $bgColors $cat | default "bg-gray-500" -}}
+{{- $emoji := index $emojiDict $cat | default "🏷️" -}}
+
+<span class="flex" style="cursor: pointer;">
+  <span
+    class="{{ $bgClass }} rounded-full border-2 border-neutral-200 px-3 py-1 text-sm font-normal text-neutral-200 dark:border-neutral-400 dark:text-neutral-200">
+    {{ $emoji }} {{ . | title }}
+  </span>
+</span>
