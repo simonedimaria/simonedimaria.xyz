@@ -5,14 +5,20 @@ weight = 1
 title = "simonedimaria's blog"
 
 [params]
-displayName = "EN"
-isoCode = "en"
-rtl = false
-dateFormat = "2 January 2006"
-logo = "static/logo.png"
-secondaryLogo = "static/logo.png"
-description = "simonedimaria blog description"
-author = { name = "simonedimaria", image = "gatto-stregone-ciccione.jpeg", headline = "`Web2/Web3 CTF player for TheRomanXpl0it`", bio = "palle bio" }
+    displayName = "EN"
+    isoCode = "en"
+    rtl = false
+    logo = "static/logo.png"
+    secondaryLogo = "static/logo.png"
+    description = "simonedimaria blog description"
+    dateFormat = "2 January 2006"
 
-[author]
-links = []
+[params.author]
+    name = "simonedimaria"
+    image = "/img/gatto-stregone-ciccione.jpeg"
+    headline = "`Web2/Web3 CTF player for TheRomanXpl0it`"
+    bio = "palle bio"
+    links = [
+        { x-twitter = "https://x.com/dimariasimone" },
+        { github = "https://github.com/simonedimaria" }
+    ]

@@ -1,18 +1,31 @@
-[[main]]
-none = "none"
+# config/_default/menus.toml
 
 [[main]]
-name = "Title"
-pre = "heart"
-pageRef = "newSite"
-identifier = "gv5r3ka2nX"
-weight = 9999
+    none = "none"
+
+[[main]]
+    name = "Blog"
+    pageRef = "posts"
+    weight = 1
+
+[[main]]
+    name = "Tags"
+    pageRef = "tags"
+    weight = 1
+
+[[main]]
+    identifier = "x-twitter"
+    pre = "x-twitter"
+    url = "https://x.com/dimariasimone"
+    weight = 2
+
+[[main]]
+    identifier = "github"
+    pre = "github"
+    url = "https://github.com/simonedimaria"
+    weight = 3
 
 [[footer]]
-none = "none"
-
-[[footer]]
-name = "footer"
-pageRef = "newSite"
-identifier = "QGICeiKOsQ"
-weight = 9999
+    name = "Tags"
+    pageRef = "tags"
+    weight = 10

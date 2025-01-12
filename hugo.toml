@@ -1,3 +1,14 @@
-baseURL = 'https://example.org/'
-languageCode = 'en-us'
-title = 'My New Hugo Site'
+# -- Site Configuration --
+# Refer to the theme docs for more details about each of these parameters.
+# https://nunocoracao.github.io/blowfish/docs/getting-started/
+
+baseURL = "https://simonedimaria.github.io"
+title = "simonedimaria's blog"
+languageCode = "en-us"
+enableRobotsTXT = true
+
+[taxonomies]
+    tag = "tags"
+    category = "categories"
+    event = "events"
+
