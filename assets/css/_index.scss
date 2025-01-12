@@ -1,0 +1,9 @@
+// assets/css/_index.scss
+
+@use 'variables';
+@use 'fonts';
+@use 'base';
+@use 'colors';
+// @use 'syntax'; <-- @TODO
+
+// compile all components to a single custom.css file
