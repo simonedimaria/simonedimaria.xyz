@@ -19,7 +19,7 @@ defaultBackgroundImage = ""
 defaultFeaturedImage = ""
 highlightCurrentMenuArea = true
 smartTOC = true
-smartTOCHideUnfocusedChildren = true
+smartTOCHideUnfocusedChildren = false
 
 [header]
     layout = "fixed-fill-blur"
