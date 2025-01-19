@@ -298,6 +298,7 @@ Whoever wrote the `URL` class thought well that to effectively check that two UR
 Questionable choice? Absolutely.  
 This is what it is anyway? Yes and we have to live with it and in case we simply want to compare two URLs as strings we should use the `URI` class.  
 
-Fun Fact: as someone said in this not so happy discussion about this behavior [here](https://news.ycombinator.com/item?id=21765788), that choice was originally made to prevent DNS rebinding attacks.  
+**Fun Fact**: as someone said in this not so happy discussion about this behavior [here](https://news.ycombinator.com/item?id=21765788), that choice was originally made to prevent DNS rebinding attacks.  
+
 ---
 Flag: `irisctf{url_equals_rebind}`
