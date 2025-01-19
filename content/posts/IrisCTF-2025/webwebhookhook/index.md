@@ -284,8 +284,20 @@ A little bit of explanation for it:
 - Large body payload to increase the execution time of `h.template.replace("_DATA_", body)` and thus increasing the duration of the target window. 
 - Spamming the `/webhook` with a while true loop to have different DNS cache TTLs and increase the chances of an IP switch in the DNS server during the target window.
 
-## Extra
-[...]
+So, at this point i just run the exploit, prayed and went to have lunch, aaand when i got back i saw this in my VPS console output
 
+![Image not loaded](./flag.png "Request with the flag received on the VPS")
+
+## Extra
+
+### But why the hell does Java do DNS resolutions on simple `==` comparisons?
+While many weird Java behaviors could be simply explained with the phrase "because Java." I wanted to try to justify why the Java devs choose to do DNS resolutions on simple equal comparisons.  
+Let's start from the fact that mainly in Java everything is an object allocated in the heap, except for primitives like `int`, `char`, `byte`, `long`, `String` etc. Therefore when the JVM has to do comparison of two objects, to see if those two objects are equal, it must check that they are equal in every way. In fact, if you create two objects of two identical classes, their comparison will return false because they have different references in memory.  
+As a result Java devs probably said something like *"you don't like it? jk what? Implement the damn comparison by yourself"*. So practically every object in Java has its own magic method `.equals()` which corresponds to its custom implementation to do more intelligent checks and not make two objects have to be just two deep copies to be equal.  
+Whoever wrote the `URL` class thought well that to effectively check that two URL objects are equal, they not only must have every property in common (path, protocol, port, ...) but must also resolve to the same IP. To find out this, obviously Java needs to perform a DNS resolution.  
+Questionable choice? Absolutely.  
+This is what it is anyway? Yes and we have to live with it and in case we simply want to compare two URLs as strings we should use the `URI` class.  
+
+Fun Fact: as someone said in this not so happy discussion about this behavior [here](https://news.ycombinator.com/item?id=21765788), that choice was originally made to prevent DNS rebinding attacks.  
 ---
 Flag: `irisctf{url_equals_rebind}`
