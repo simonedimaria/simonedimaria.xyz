@@ -141,7 +141,7 @@ Both endpoints do not provide SSRF protections, however it's irrelevant for us a
 At first glance, there doesn't seem to be an obvious way to intercept the flag, since the only way would be to successfully match the hook check and send the `POST` to `example.org`, which would be ez game if we were the admins of domain, which is not the case :P  
 One of my first steps was to try an HTTP smuggling, given the arbitrary control over the body that then replaces the content of `_DATA_`, to build a request like this:
 
-![Smuggling attempt on body content.](./h2_attempt.png "Smuggling attempt on body content.")
+![Smuggling attempt on body content.](./img/h2_attempt.png "Smuggling attempt on body content.")
 
 However, we note how the body of the request is correctly set based on the length of our payload at **L31** with `conn.setFixedLengthStreamingMode(newBody.length)` consequently failing to delimit the stream of the request to build a new one. Furthermore, it is not possible to override the request headers and in any case it would be a matter of exploiting a Spring Boot HTTP desync but today will not be the day of 0-days :/
 
@@ -189,11 +189,11 @@ if(h.hook == hook) {
 Moreover, Java's built-in DNS cache mechanism made things even more complicated.  
 While testing my basic DNS rebinding primitive, I noticed that I was getting the same status code in response to the `/webhook` endpoint for a period of 30 seconds. This sounded a bit strange to me since my DNS server was configured to reply with a 1 second TTL. In fact, what I did was a quick sanity check using both curl and python, and from both these clients the response to my rebinder domain kept changing every second:  
 
-![DNS test](dns_python_test.png "Python DNS test: caching NOT enabled")
+![DNS test](./img/dns_python_test.png "Python DNS test: caching NOT enabled")
 
-![DNS test](dns_java_test.png "Java DNS test: caching enabled")
+![DNS test](./img/dns_java_test.png "Java DNS test: caching enabled")
 
-!["*idk if java is doing some weird caching, python and curl behave differently. Trying multithread. I think i'm dossing example.org 💀*"](foggia.png "*\"idk if java is doing some weird caching, python and curl behave differently. Trying multithread. I think i'm dossing example.org\"* 💀")
+!["*idk if java is doing some weird caching, python and curl behave differently. Trying multithread. I think i'm dossing example.org 💀*"](./img/foggia.png "*\"idk if java is doing some weird caching, python and curl behave differently. Trying multithread. I think i'm dossing example.org\"* 💀")
 
 
 Clearly some caching was at work in the Java side. It turns out that Java caches a DNS resolution for 30 seconds, which meant that we wanted to get our timing right when sending payload to the `/webhook` endpoint, so that **the cache would be fetched at the time of comparison against example.org, to be invalidated immediately afterwards, thus requiring a cache revalidation at the time of the socket connection to send the flag to a domain under our control.**  
@@ -308,7 +308,7 @@ A little bit of explanation for it:
 
 So, at this point i just run the exploit, prayed and went to have lunch, aaand when i got back i saw this in my VPS console output
 
-![Request with the flag received on the VPS](./flag.png "Request with the flag received on the VPS")
+![Request with the flag received on the VPS](./img/flag.png "Request with the flag received on the VPS")
 
 ## Extra
 
