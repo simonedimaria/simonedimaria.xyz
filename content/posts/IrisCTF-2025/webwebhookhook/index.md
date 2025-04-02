@@ -7,6 +7,11 @@ difficulty: "medium"
 tags: ["writeup", "DNS rebinding", "race condition", "TOCTOU"]
 ---
 
+{{< alert icon="fire" >}}
+**Update**:  
+This writeup was selected as one of the winners of the Iris CTF 2025 writeup competition --> https://discord.com/channels/1051808836593397781/1051815606732738590/1333226270699294800  
+{{< /alert >}}
+
 ## TL;DR
 The challenge consisted in exploiting a **TOCTOU** race condition by using **DNS rebinding** to bypass `URL.equals()` check in Java. 
 
