@@ -70,7 +70,7 @@ smartTOCHideUnfocusedChildren = false
     showZenMode = true
 
 [list]
-    showHero = false
+    showHero = true
     # heroStyle = "thumbAndBackground" # valid options: basic, big, background, thumbAndBackground
     layoutBackgroundBlur = true
     layoutBackgroundHeaderSpace = true
