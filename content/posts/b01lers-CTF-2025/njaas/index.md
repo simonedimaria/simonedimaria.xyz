@@ -8,7 +8,6 @@ tags: ["NextJS", "CVE-2025-29927", "CVE-2025-30218"]
 showHero: true
 ---
 
-
 ## TL;DR
 The `proxy/app.py` server is a simple reverse proxy that start up a `NextJS` app instance and forwards requests to it. This proxy is vulnerable because it allows setting an environment variable, but with length constraints and without controlling the value. This can be abused to set the `NEXT_PRIVATE_TEST_HEADERS` env var on the `NextJS` app and make the `CVE-2025-29927` exploit possible again.
 
@@ -17,8 +16,8 @@ The `proxy/app.py` server is a simple reverse proxy that start up a `NextJS` app
 > I heard about some next.js cve issues recently, so I decided to provide next.js on a safe version for anyone!
 
 
-## Challenge Scenario
-Another week goes by, and again NextJS can't go 5 seconds without humiliating itself. Since the public disclosure of CVE-2025-29927, NextJS has caught the attention of many security researchers from all over the world, and in particular from CTF players. When I saw that this weekend too there was a challenge on NextJS I could NOT skip it, I needed a good laugh.  
+## Introduction
+Another week goes by, and again NextJS can't go 5 seconds without humiliating itself. Since the public disclosure of [CVE-2025-29927](https://github.com/advisories/GHSA-f82v-jwr5-mffw), NextJS has caught the attention of many security researchers from all over the world, and in particular from CTF players. When I saw that this weekend too there was a challenge on NextJS I could NOT skip it, I needed a good laugh.  
 
 ![NextJS meme](./img/nextjs-meme.jpg "At this point I don't know anymore who's the most bullied between NextJS and Bun.")  
 
@@ -28,7 +27,7 @@ It was one of the first challenges I looked into, and after a few hours we got f
 
 At the end of the event, it was the least solved web challenge along with `web/musicplayer` (which we also solved :p) so here I am writing a writeup for it.
 
-## Challenge Scenario (for real this time)
+## Challenge Scenario
 The challenge setup is pretty simple, there's a `proxy/app.py` server that acts as instancer and reverse proxy for the NextJS app that can be launched via the `/start` endpoint. The NextJS app is essentially just a template that hardcodes the flag in the html at `/admin/flag`, but with the following middleware:
 
 **middleware.ts**
@@ -46,22 +45,22 @@ export const config = {
 }
 ```
 
-As simple as it gets, the middleware just redirects any request to `/admin/*` back to the homepage. Or I'd say, how it should have been (right nextjs?). Clearly the goal here is to bypass the middleware to get the flag, which instantly made me think of CVE-2025-29927. 
+As simple as it gets, the middleware just redirects any request to `/admin/*` back to the homepage. Or I'd say, how it should have been (right nextjs?). Clearly the goal here is to bypass the middleware to get the flag, which instantly made me think of [CVE-2025-29927](https://github.com/advisories/GHSA-f82v-jwr5-mffw). 
 
 {{< alert "circle-info" >}}
-Any route-based bypass could also have worked obviously, it may happen with some `matcher` misconfigurations for example. Something that could also work is any type of path normalization issue that is then used for an internal rewrite (NextResponse.rewrite).  
-Interestingly enough, while I was fuzzing for interesting env vars, I found the `skipMiddlewareUrlNormalize` config (tracked by the [`__NEXT_NO_MIDDLEWARE_URL_NORMALIZE` env var at build time](https://github.com/vercel/next.js/blob/f0f0e4bf5aa67bfed0b7bbf87a2ebe75b02a54bb/packages/next/src/build/webpack/plugins/define-env-plugin.ts#L234-L235)), that [disables URL normalizations in middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware#advanced-middleware-flags)... aand why is that interesting? NextJS automatically generates internal JSON endpoints for SSR pages, e.g. `/_next/data/<build-id>/admin/flag.json` for `/admin/flag` endpoint. These endpoints contain only the props needed for hydration or ISR, to avoid sending the full HTML each render. By default, the router rewrites a request like `/_next/data/<id>/admin/flag.json` to `/admin/flag` before it reaches middleware. Setting `skipMiddlewareUrlNormalize` disables that rewrite, so the JSON route no longer matches the `/admin/:path*` matcher and slips past the middleware.
+Any route-based bypass could also have worked obviously, it may happen with some `matcher` misconfigurations for example. Something that could also work is any type of path normalization issue that is then used for an internal rewrite (`NextResponse.rewrite()`).  
+Interestingly enough, while I was fuzzing for interesting env vars, I found the `skipMiddlewareUrlNormalize` config (tracked by the [`__NEXT_NO_MIDDLEWARE_URL_NORMALIZE` env var at build time](https://github.com/vercel/next.js/blob/f0f0e4bf5aa67bfed0b7bbf87a2ebe75b02a54bb/packages/next/src/build/webpack/plugins/define-env-plugin.ts#L234-L235)), that [disables URL normalizations in middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware#advanced-middleware-flags)... aand why is that interesting? NextJS automatically generates internal JSON endpoints for SSR pages, e.g. `/_next/data/<build-id>/admin/flag.json` for the `/admin/flag` endpoint. These endpoints contain only the props needed for hydration or ISR, to avoid sending the full HTML each render. By default, the router rewrites a request like `/_next/data/<build-id>/admin/flag.json` to `/admin/flag` before it reaches middleware. Setting `skipMiddlewareUrlNormalize` disables that rewrite, so the JSON route no longer matches the `/admin/:path*` matcher and slips past the middleware.
 {{< /alert >}}
 
 The challenge was running a hardcoded version of NextJS 15.2.3, meaning that the CVE-2025-29927 was not directly exploitable anymore.  
-Fun fact: After CVE-2025-29927 was patched, I decided to take a look on how they implemented the fix. Initially I expected that they had completely revisited the middleware request handling model (because there's no way that's a good design model). Then I remembered that we are talking about NextJS and that in the meantime the vulnerability had gone around the world. It certainly couldn't be a quality patch to say the least.
+*Fun fact*: After CVE-2025-29927 was patched, I decided to take a look on how they implemented the fix. Initially I expected that they had completely revisited the middleware request handling model (because there's no way that's a good design model). Then I remembered that we are talking about NextJS and that in the meantime the vulnerability had gone around the world. It certainly couldn't be a quality patch to say the least.  
 In fact, this was the patch: https://github.com/vercel/next.js/commit/52a078da3884efe6501613c7834a3d02a91676d2
 
 The commit message alone doesn't inspire much confidence, it looks almost like a routine dev fix and not a critical security patch. At that time I decided to take a closer look and so I found myself reading the NextJS source code at 3 AM of a random Sunday.  
 In fact, I quickly realized that the "patch" wasn't actually a fix, but rather a workaround: `x-middleware-subrequest` was still allowed from ingress requests, but now an 8-byte cryptographically random `middlewareSubrequestId` is generated and the header gets dropped if a `x-middleware-subrequest-id` doesn't match that secret.  
 This means that the vulnerability is still there, but now you need to guess or leak the `middlewareSubrequestId` in order to exploit it.
 
-Here's me trolling with @salvatore.abello about that patch:
+Here's me the next day trolling with @salvatore.abello about that patch:
 ![sus nextjs CVE-2025-29927 patch](./img/missed_nextjs_cve.png "sus nextjs CVE-2025-29927 patch")
 
 WELL... guess what happens a few days later?   
@@ -92,9 +91,9 @@ def csrf():
 ```
 
 The endpoints looks intended to set a CSRF token as env var to pass it later to the NextJS app, but the implementation is pretty bad. What actually happens here is that we can set any env var with a minimum length of 20 chars and a maximum of 30. Furthermore, we don't control its value, since the value is the random hex token `CSRF_TOKEN` generated by `token_hex(16)`, at the beginning of `app.py`.  
-What we can do, however, is set any env var of that length constraint that will be interpreted as on-off switch.  
+What we can do, however, is set any env var of that length constraint that will be interpreted as on-off switch. Note that it doesn't have to be a valid hex string, because any `ValueError` will be caught and the env var is set on `environ` beforehand anyway. 
 
-Since the Next.js app is started using `subprocess.run`, it inherits the environment variables from the `proxy/app.py` process. This means any environment variable set via the `/csrf` endpoint will be propagated to the Next.js app's runtime environment when `npm run start` (and thus `next start`) is executed.
+Since the NextJS app is started using `subprocess.run`, it inherits the environment variables from the `proxy/app.py` process. This means any environment variable set via the `/csrf` endpoint will be propagated to the NextJS app's runtime environment when `npm run start` (and thus `next start`) is executed.
 
 The NextJS app can be started via the `/start` endpoint, but here one thing can be problematic:
 ```python
@@ -121,7 +120,7 @@ def start():
 ```
 
 As we can see, at the beginning of the function, the `clear_csrf()` function is called, which clears any env var whose value matches the `CSRF_TOKEN` value. Remember that we don't control the value of the env vars set via the `/csrf` endpoint, and that value is exactly `CSRF_TOKEN`. This effectively clears any env var we set **before** calling the `/start` endpoint.  
-But wait, that's the point! we can set the env var **after** calling the `/start` endpoint, and the `clear_csrf()` function execution, but we need to make sure that the env var is set before the `start.sh` command launches the NextJS app.  
+But wait, that's the point! we can set the env var **after** calling the `/start` endpoint and the `clear_csrf()` function execution, but we need to make sure that the env var is set before the `start.sh` command launches the NextJS app.  
 This results in a race condition between the `/csrf` and `/start` endpoints, but that's actually trivial since the code is running `sleep 3` before starting the NextJS app, giving us more than enough race window to set the env var.
 
 Now, we needed to find an env var that matches length constraints that can cause some interesting behavior.
