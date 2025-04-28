@@ -1,35 +1,28 @@
 # .github/workflows/gh-pages.yml
+
 name: GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
-
     steps:
-      - name: Checkout (root only)
+      - name: Checkout
         uses: actions/checkout@v3
         with:
+          submodules: true
           fetch-depth: 0
-          submodules: false
 
-      - name: Initialise submodules tolerantly
-        run: |
-          git submodule sync     # refresh URLs
-          if ! git submodule update --init --recursive --depth 1 ; then
-            echo "::warning file=.gitmodules::Exact submodule revision missing – using remote HEAD"
-            git submodule update --init --recursive --remote --depth 1
-          fi
-      
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
-          hugo-version: latest
+          hugo-version: "latest"
 
       - name: Build
         run: hugo --minify
@@ -41,3 +34,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./public
+
