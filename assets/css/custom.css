@@ -1043,4 +1043,18 @@ code {
   background-color: hsl(var(--rose-950)/1);
 }
 
+@media (min-width: 1024px) {
+  /* loosen content width on larger displays */
+  body {
+    max-width: min(90rem, 96vw);
+  }
+
+  #single_header.max-w-prose,
+  .article-content.max-w-prose,
+  footer.max-w-prose {
+    max-width: min(72rem, 94vw);
+    width: 100%;
+  }
+}
+
 /*# sourceMappingURL=custom.css.map */
