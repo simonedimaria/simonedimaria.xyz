@@ -4,7 +4,7 @@ title: Ctrl+Space CTF Finals 2025 - RicingStar [Author Writeup]
 summary: Writeup for the Ctrl+Space CTF Finals 2025 web client-side Firefox challenge "RicingStar".
 categories: ["web"]
 difficulty: "medium"
-tags: ["client-side", "firefox", "extensions"]
+tags: ["authored", "client-side", "firefox", "extensions"]
 showHero: true
 ---
 
