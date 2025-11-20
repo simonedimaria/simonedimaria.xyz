@@ -10,7 +10,7 @@ title = "simonedimaria's blog"
     rtl = false
     logo = "static/logo.png"
     secondaryLogo = "static/logo.png"
-    description = "simonedimaria blog description"
+    description = "simonedimaria's blog"
     dateFormat = "2 January 2006"
 
 [params.author]
