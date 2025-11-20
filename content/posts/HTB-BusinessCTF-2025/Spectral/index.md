@@ -15,6 +15,8 @@ Prepared By: perrythepwner
 Challenge Author(s): **perrythepwner**  
 Difficulty: <font color=green>Easy</font>
 
+{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/HTB-BusinessCTF-2025/Spectral" >}}
+
 ---
 
 ## TLDR

@@ -15,6 +15,8 @@ Challenge Author: <font color=#1E9F9A>perrythepwner</font> \
 Difficulty: <font color=green>Very Easy</font> \
 Category: <font color=orange> Blockchain</font>
 
+{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/HTB-CyberApocalypse-2024/RussianRoulette" >}}
+
 ## TL;DR
 
 - This challenge aims to be an entry level / warmup for the blockchain category. In order to solve, players need to send a bunch of transactions until they get lucky (i.e. pulling the trigger until the contract shot himself).

@@ -15,6 +15,8 @@ Challenge Author: <font color=#1E9F9A>perrythepwner</font> \
 Difficulty: <font color=lightgreen>Easy</font> \
 Category: <font color=orange> Blockchain</font>
 
+{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/HTB-CyberApocalypse-2024/LuckyFaucet" >}}
+
 ## TL;DR
 
 - The challenge consists in draining a generous faucet by exploiting an unsafe casting from `int64` to `uint64` in Solidity 0.7.6 (latest Solidity version before 0.8.0 breaking changes of native integer overflow checks) that causes an integer underflow in case of negative bounds set.

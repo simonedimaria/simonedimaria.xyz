@@ -15,6 +15,8 @@ Prepared By: perrythepwner \
 Challenge Author(s): perrythepwner \
 Difficulty: <font color=red>Hard</font>
 
+{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/HTB-UniversityCTF-2024/Stargazer" >}}
+
 ---
 
 ## TLDR

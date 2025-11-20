@@ -8,6 +8,8 @@ tags: ["authored", "client-side", "firefox", "extensions"]
 showHero: true
 ---
 
+{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/Ctrl+Space-CTF-Finals-2025/RicingStar" >}}
+
 ## TL;DR
 Forcing a [Firefox Xray Vision](https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html) Waiving on an untrusted object passed via [`MessageEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent) to a [Content Script](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts) privileged execution context using [`document.all`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLAllCollection) object weirdness, and bypassing Content Script validation checks by defining custom getters on the waived `document.all` and by emptying all DOM tree nodes. Once the malicious object is forwarded to the Extension background script, all [`browser.scripting.insertCSS` API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/scripting/insertCSS) arguments can be set, and therefore injecting an [User origin stylesheet](https://developer.mozilla.org/en-US/docs/Glossary/Style_origin) with enabled [`@-moz-document`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@document) rules to exfiltrate the flag from the challenge tab URL. 
 

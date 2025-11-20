@@ -15,6 +15,8 @@ Challenge Author: <font color=#1E9F9A>perrythepwner</font> \
 Difficulty: <font color=yellow>Medium</font> \
 Category: <font color=orange>Blockchain</font>
 
+{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/HTB-BusinessCTF-2023/2244_ELECTIONS" >}}
+
 # TL;DR
 
 - The challenge consists of a smart contract e-voting system which turns out to have a backdoor as a private function. The source code is not provided, through the JSON-RPC the players must take the bytecode deployed on the blockchain and reverse it to discover and exploit the backdoor.

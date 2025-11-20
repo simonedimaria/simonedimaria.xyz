@@ -6,10 +6,6 @@ categories: ["blockchain"]
 difficulty: "very-easy"
 tags: ["authored", "warmup", "EVM", "private-visibility", "storage"]
 showHero: true
-challengeSource:
-  url: https://github.com/simonedimaria/my-ctf-challenges/tree/main/HTB-BusinessCTF-2025/Enlistment
-  title: Enlistment challenge source
-  description: Full challenge contracts and solve scripts for the Enlistment blockchain challenge.
 ---
 
 # Enlistment
@@ -21,9 +17,7 @@ Difficulty: <font color=light-green>Very-Easy</font>
 
 ---
 
-{{< github repo="simonedimaria/my-ctf-challenges" showThumbnail=true >}}
-
-{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/blob/main/HTB-BusinessCTF-2025/Enlistment" showThumbnail=true >}}
+{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/HTB-BusinessCTF-2025/Enlistment" >}}
 
 
 ## TLDR

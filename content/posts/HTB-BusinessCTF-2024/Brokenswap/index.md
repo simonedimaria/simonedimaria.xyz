@@ -17,6 +17,8 @@ Challenge Author: <font color=#1E9F9A>perrythepwner</font> \
 Difficulty: <font color=yellow>Medium</font> \
 Category: <font color=orange> Blockchain</font>
 
+{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/HTB-BusinessCTF-2024/Brokenswap" >}}
+
 ## TL;DR
 
 - The challenge consist in finding a way to steal funds from a Decentralized Exchange (DEX). The DEX relies con the *Constant Product Formula* to calculate prices of the assets and it's possible to cause an imbalance in the pool (and therefore make profitable trades) calling the `_moveAmountToFeesPool()` - incorrectly marked with the modifier `public` instead of `internal` - to move arbitrary tokens out of the liquidity pool.

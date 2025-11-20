@@ -15,6 +15,8 @@ Challenge Author: <font color=#1E9F9A>perrythepwner</font> \
 Difficulty: <font color=yellow>Very Easy</font> \
 Category: <font color=orange> Blockchain</font>
 
+{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/HTB-CyberApocalypse-2024/Recovery" >}}
+
 ## TL;DR
 
 - The challenge consist in recovery stolen BTC funds given an Electrum seed phrase in an hacked ssh instance.

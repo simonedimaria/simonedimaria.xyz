@@ -16,6 +16,8 @@ Challenge Author(s): perrythepwner \
 Difficulty: <font color=lightgreen>Very Easy</font>
 
 
+{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/HTB-BusinessCTF-2024/Recruitment" >}}
+
 ## Synopsis
 
 - This challenge serves as an entry-level warmup for the blockchain category. Players will learn how to interact with the infrastructure and solve the challenge by satisfying transaction constraints.

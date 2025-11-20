@@ -15,6 +15,8 @@ Prepared By: perrythepwner \
 Challenge Author(s): **perrythepwner** \
 Difficulty: <font color=lightgreen>Very-Easy</font>
 
+{{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/HTB-CyberApocalypse-2025/Eldorion" >}}
+
 ---
 
 ## TLDR
