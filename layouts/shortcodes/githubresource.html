@@ -1,0 +1,12 @@
+{{- $url := .Get "url" -}}
+{{- $repo := .Get "repo" -}}
+{{- $title := .Get "title" -}}
+{{- $description := .Get "description" -}}
+
+{{- partial "github-resource.html" (dict
+  "context" .Page
+  "url" $url
+  "repo" $repo
+  "title" $title
+  "description" $description
+) -}}
