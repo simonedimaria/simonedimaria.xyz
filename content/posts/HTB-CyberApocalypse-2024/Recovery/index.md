@@ -1,6 +1,6 @@
 ---
 date: 2024-03-09T00:00:00+01:00
-title: HTB CyberApocalypse 2024 - Recovery [Author Writeup]
+title: HTB Cyber Apocalypse 2024 - Recovery [Author Writeup]
 summary: Author writeup for the "Recovery" very-easy blockchain challenge from CyberApocalypse CTF 2024.
 categories: ["blockchain"]
 difficulty: "very-easy"
