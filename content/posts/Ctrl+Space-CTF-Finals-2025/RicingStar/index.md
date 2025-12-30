@@ -11,16 +11,16 @@ showHero: true
 {{< githubresource url="https://github.com/simonedimaria/my-ctf-challenges/tree/main/Ctrl+Space-CTF-Finals-2025/RicingStar" >}}
 
 ## TL;DR
-Forcing a [Firefox Xray Vision](https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html) Waiving on an untrusted object passed via [`MessageEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent) to a [Content Script](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts) privileged execution context using [`document.all`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLAllCollection) object weirdness, and bypassing Content Script validation checks by defining custom getters on the waived `document.all` and by emptying all DOM tree nodes. Once the malicious object is forwarded to the Extension background script, all [`browser.scripting.insertCSS` API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/scripting/insertCSS) arguments can be set, and therefore injecting an [User origin stylesheet](https://developer.mozilla.org/en-US/docs/Glossary/Style_origin) with enabled [`@-moz-document`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@document) rules to exfiltrate the flag from the challenge tab URL. 
+Forcing a [Firefox Xray Vision](https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html) Waiving on an untrusted object passed via [`MessageEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent), to a [Content Script](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts) privileged execution context abusing [`document.all`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLAllCollection) weirdness, bypassing Content Script validation checks by defining custom getters on the waived `document.all` and by emptying all DOM tree nodes. Once the malicious object is forwarded to the Extension background script, all [`browser.scripting.insertCSS` API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/scripting/insertCSS) arguments can be set, and therefore injecting an [User origin stylesheet](https://developer.mozilla.org/en-US/docs/Glossary/Style_origin) with enabled [`@-moz-document`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@document) CSS rule to exfiltrate the flag from the challenge page URL. 
 
 ## Description
 > Do you love ricing?
 
 
 ## Challenge Scenario
-The challenge is supposed to be about a Custom Theme Generator extension for Firefox, since it's a fairly common practice for "ricing" enthusiasts to just trust third-parties `userChrome.css` themes files, even though they can be quite powerful. *But, it's just CSS at the end of the day, right..?*
+The challenge is supposed to be about a Custom Theme Generator extension for Firefox, since it's a fairly common practice for "ricing" enthusiasts to trust third-parties `userChrome.css` theme files, even though they can be quite powerful. *But it's just CSS at the end of the day, right..?*
 
-Upon visiting the challenge page, flying mhackeroni™ spaceshuttles are flying all over the screen, and switching to the "Editor" tab, users can customize their Ctrl+Space™ special edition them as their likings:  
+Upon visiting the challenge page, flying mhackeroni™ spaceshuttles are flying all over the screen, and switching to the "Editor" tab, users can customize their Ctrl+Space™ special edition theme to their likings:  
 
 ![extension landpage](./img/challenge_landpage.png "extension landpage")
 <figure>
@@ -31,16 +31,16 @@ Upon visiting the challenge page, flying mhackeroni™ spaceshuttles are flying 
   <figcaption>i had a bit too much fun with that :/</figcaption>
 </figure>
 
-The page also invites users to download their customized theme and applying it manually, or by directly installing the provided extension zip file and loading it in their Firefox Add-ons.  
+The page also invites users to download their customized theme and apply it manually, or by directly installing the provided extension zip file and loading it in their Firefox Add-ons.  
 
 Flying mhackeroni™ spaceshuttles are now navigating in your chatgpt.com window! Actually, all of them!  
 
 ![ctrl+space™ google.com](./img/google_theme.png "ctrl+space™ google.com")
-![ctrl+space™ chatgpt.com](./img/chatgpt_theme.png "Your favorite clanker mhackeroni™ themed")
+![ctrl+space™ chatgpt.com](./img/chatgpt_theme.png "Your favorite clanker, mhackeroni™ themed")
 
 We can now analyze the actual challenge sources after harassing our GPU \:)
 
-**The challenge bot** is fairly simple: runs a geckodriver instance under Selenium, allows only http/https urls, disables WASM and JIT, and finally does the following actions:
+**The challenge bot** is fairly simple: it runs a Geckodriver instance under Selenium, allows only http/https URLs, disables WASM and JIT, and finally does the following actions:
 ```python
 driver.install_addon(EXTENSION_PATH, temporary=True)
 driver.get(f"{BASE_URL}/?flag={FLAG}")
@@ -48,9 +48,9 @@ driver.switch_to.new_window("tab")
 driver.get(url)
 time.sleep(TIMEOUT)
 ```
-Which 1) installs the provided extension as a temporary add-on, 2) visits the challenge page with the flag in the URL, 3) opens a new tab with the user-provided URL, and 4) sleeps for TIMEOUT (10) seconds before quitting. The player is therefore required to exfiltrate the flag from the challenge page URL, *but this can't be done with CSSI alone, right..?*
+Which 1) installs the provided extension as a temporary add-on, 2) visits the challenge page with the flag in the URL, 3) opens a new tab with the user-provided URL, and 4) sleeps for 10 seconds before quitting. The player is therefore required to exfiltrate the flag from the challenge page URL, *but this can't be done with CSS Injection alone, right..?*
 
-**The extension setup** is also quite simple and common: A `manifest.json` that gives `scripting` permission to an extension which is running a `background.js` on install and that injects a `contentscript.js` [Content Script](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts) on all pages to act as a "bridge" between the extension "priviledged" execution context and the "untrusted" page context and DOM.
+**The extension setup** is also quite simple and common: A `manifest.json` that gives `scripting` permission to an extension which is running a `background.js` on install and injects a `contentscript.js` [Content Script](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts) on all pages to act as a "bridge" between the extension "privileged" execution context and the "untrusted" page context and DOM.
 
 **manifest.json**
 ```json
@@ -84,7 +84,7 @@ Note that the extension's manifest defined `host_permissions` for all URLs, whic
 From MDN Web Docs:
 > Externally connectable controls which other extensions and web pages can communicate with an extension using `runtime.connect()` and `runtime.sendMessage()` message passing.
 
-However, as MDN also points out, the functionality it's [not yet supported on firefox](https://bugzilla.mozilla.org/show_bug.cgi?id=1319168), meaning it's useless. This was supposed to just be a cheap anti-slop/anti-llm-clankers hallucination bait 🎣 (pt.1.).
+However, as MDN also points out, the functionality is [not yet supported in Firefox](https://bugzilla.mozilla.org/show_bug.cgi?id=1319168), which means it’s useless. This was supposed to just be a cheap anti-slop/anti-LLM/clankers hallucination bait 🎣 (pt.1.).
 
 **background.js**
 ```js
@@ -116,9 +116,9 @@ browser.runtime.onMessage.addListener(applyTheme);
 browser.runtime.onInstalled.addListener(setup);
 ```
 
-The extension's background script registers the content script on install from the extension files, and listens for messages from it to apply the theme CSS to the current tab. However, it only applies the theme if the [extension is in development mode](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/management/ExtensionInfo#installtype) and the message sender is the extension itself. A few remarks can be made here:
-- "**Development mode**" just means whether the extension was loaded as a temporary add-on from disk or installed from the store. It's not a controllable flag. The client side bot will install it with the `temporary=True` flag, meaning the bot will always have that "development mode" enabled. This was supposed to just be a cheap anti-slop/anti-llm-clankers hallucination bait 🎣 (pt.2.).
-- The **sender check is redundant**, since `runtime.onMessage` only receives messages from the extension's own context, i.e. only from the installed content script. This was supposed to just be a cheap anti-slop/anti-llm-clankers hallucination bait 🎣 (pt.3.).
+The extension's background script registers the content script on install from the extension files, and listens for messages sent from it to apply the theme CSS to the current tab. However, it only applies the theme if the [extension is in development mode](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/management/ExtensionInfo#installtype) and the message sender is the extension itself. A few remarks can be made here:
+- "**Development mode**" just means whether the extension was loaded as a temporary add-on from disk or installed from the store. It's not a controllable flag. The client side bot will install it with the `temporary=True` flag, meaning the bot will always have that "development mode" enabled. This was supposed to just be a cheap anti-slop/anti-LLM/clankers hallucination bait 🎣 (pt.2.).
+- The **sender check is redundant**, since `runtime.onMessage` only receives messages from the extension's own context, i.e. only from the installed content script. This was supposed to just be a cheap anti-slop/anti-LLM/clankers hallucination bait 🎣 (pt.3.).
 - The `defaultOpts` object sets a few default arguments for the `insertCSS` call, but the object is then merged with the `msg` object with `Object.assign()` function, which uses **right-to-left precedence**, meaning they can be overridden if specified in the `msg` object. (Not a clanker bait this time).
 
 But can we actually specify otherwise in the content script? Let's see.
@@ -180,35 +180,35 @@ applyDefaultTheme();
 
 The Content Script running in pages listens for incoming `message` events, validates that the event origin matches the current page origin, and then validates the `options` object received with `validateInsertOptions` function before forwarding it to the background script.  
 
-First of all, the `if (evt.origin !== window.origin) return;` check is, again, useless, since the content script is running in the page context, `evt.origin` will always match `window.origin`. Moreover, while this is kinda of ok in normal webpages for cross-site protection, **it's not in case of extensions**. Any origin could just dispatch a raw [`MessageEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent/MessageEvent) to the page, and it would trigger the content script event listener anyway, effectively bypassing any origin checks since `MessageEvent`'s constructor has an [`origin`](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent/MessageEvent#options) parameter that can be set to any value. the `Event`'s `isTrusted` property should always be checked in those cases, since dispatched raw `MessageEvent` instances will always have `isTrusted` set to `false`.  
+First of all, the `if (evt.origin !== window.origin) return;` check is, again, useless, since the content script is running in the page context, `evt.origin` will always match `window.origin`. Moreover, while this is kinda of ok in normal webpages for cross-site protection, **it's not in case for extensions**. Any origin can dispatch a raw [`MessageEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent/MessageEvent) to the page, and it will trigger the content script event listener anyway, effectively bypassing any origin checks, since `MessageEvent`'s constructor has an [`origin`](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent/MessageEvent#options) parameter that can be set to any value. The `Event`'s `isTrusted` property should always be checked in that case, since dispatched raw `MessageEvent` instances will always have `isTrusted` set to `false`.  
 
 The `validateInsertOptions` function instead runs a few type checks and nullish/undefined checks on the passed properties, and particularly validates that:
 - Either `css` or `files` property is specified.
-- If `css` property is specified, it must be a string containing only CSS style rules (no `@import`, `@media`, `@supports`, `@namespace`, etc.) (I've just whitelisted the rules needed by the default CSS theme).
+- If `css` property is specified, it must be a string containing only CSS "style" rules (no `@import`, `@media`, `@supports`, `@namespace`, etc.) (I've just whitelisted the rules needed by the default CSS theme).
 - If `files` property is specified, all files must be from the extension's own origin.
 - If `origin` property is specified, it must be set to `"AUTHOR"`.
 
-***As these checks stand out, it's not possible to achieve any meaningful injection*** *(except for Firefox 0days :p)*.  
+***As these checks stand, it's not possible to achieve any meaningful injection*** *(except for Firefox 0days :p)*.  
 *But Why?*  
 
 ## Stylesheets Origins
-The key is mainly on the `insertCSS` API `origin` parameter restriction to `"AUTHOR"` only. This parameter specifies the [stylesheet origin](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Cascade#origin_types) it's being applied.  
+The key is mainly in the `insertCSS` API `origin` parameter restriction to `"AUTHOR"` only. This parameter specifies the [stylesheet origin](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Cascade#origin_types) being applied.  
 
 From MDN Web Docs:
 
 > Author stylesheets are the most common type of stylesheet; these are the styles written by web developers. [...] The author, or web developer, defines the styles for the document using one or more linked or imported stylesheets, \<style\> blocks, and inline styles defined with the style attribute. These author styles define the look and feel of the website — its theme.
 
-Basically common known CSS styles applied by web pages. So what are "*User stylesheets*" about then?
+Basically commonly known CSS styles applied by web pages. So what are "*User stylesheets*" about then?
 
 > In most browsers, the user (or reader) of the website can choose to override styles using a custom user stylesheet designed to tailor the experience to the user's wishes. Depending on the user agent, user styles can be configured directly or added via browser extensions.
 
 Those have something to do with extensions! And these are exactly what type of stylesheets you're using when using custom `userChrome.css` themes on your riced Firefox setup!  
-But how they differ in practice? User stylesheets have the higher precedence in the [CSS Cascade](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade), meaning they will always override Author stylesheets, even if the Author styles use `!important` rules. But apart from that, they also have sometimes access to internal or legacy features that only UA stylesheets have!  
+But how do they differ in practice? User stylesheets have the higher precedence in the [CSS Cascade](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade), meaning they will always override Author stylesheets, even if the Author styles use `!important` rules. But apart from that, they also sometimes have access to internal or legacy features that only UA stylesheets have!  
 
 ## `@-moz-document` at-rule abuse
 For example, back in the days, Firefox allowed extensions to use `-moz-binding` CSS property, which allowed to bind XUL elements (Firefox's own UI elements!) to arbitrary XML files containing XBL components (definitely not safe at all). Those bindings had a weak "signed JAR" policy that could be bypassed and achieve UXSS! https://www.mozilla.org/en-US/security/advisories/mfsa2008-57/.  
 **This is fun but 2008 is long gone, right?** (*Even tho they [restricted it to UA stylesheets only in 2019!](https://bugzilla.mozilla.org/show_bug.cgi?id=1523712)*)  
-Yes, but more legacy features are still available. One of them is the [`-moz-document` CSS at-rule](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@document). This at-rule ***allows to apply CSS rules based on document's URL matching***.  
+Yes, but more legacy features are still available. One of them is the [`-moz-document` CSS at-rule](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@document). This at-rule ***allows to apply styling based on document's URL matching***.  
 Ouch :/ Who ever thought that would be a good idea?  
 The feature as MDN documents, it's obviously non-standard, and was deprecated in Firefox after [Firefox bug 1035091](https://bugzilla.mozilla.org/show_bug.cgi?id=1035091) that exposed clear security issues with it. **However, the rule is still supported in Firefox user stylesheets!** 
 
@@ -216,8 +216,8 @@ The feature as MDN documents, it's obviously non-standard, and was deprecated in
 
 ***And since we can define "USER" origin stylesheets within `insertCSS` API, we could use it to exfiltrate the flag from the challenge page URL.***  
 
-{{< alert "circle-info" >}}
-Honestly I think it's kinda ok to have as a feature in user stylesheets, but it's surely should be limited to domain matching only, but as today we can clearly match full URLs with it...and with regexes also!  
+{{< alert "circle-info" >}}  
+Honestly, I think it’s kinda okay to have this as a feature in user stylesheets, but it really should be limited to domain matching only. Right now, though, we can clearly match full URLs with it, even using regexes!  
 {{< /alert >}}
 
 No CSP is applied to the challenge page, meaning the following rule will be enough to tell us whether the flag has a `0` character in the 2nd place:
@@ -229,30 +229,33 @@ No CSP is applied to the challenge page, meaning the following rule will be enou
 }
 ```
 
-## Waiving Firefox Xray Vision and abusing `document.all` weirdness
+## Waiving Firefox Xray Vision by abusing `document.all` weirdness
 Well, but we can't set `origin: "USER"` parameter because of the content script check, right?  
-We actually can! and it all relies in this little detail in the content script:
+We actually can! and it all relies on this little detail in the content script:
 
 ```js
 const options = evt.data || evt.data.wrappedJSObject;
 ```
 
-**The `evt.data.wrappedJSObject` property is a non-standard Firefox-specific object’s property present in higher priviledge execution contexts, that allows to access the underlying "wrapped" JavaScript object from XPCOM components, i.e. the underlying low-level C++ implementation of Javascript objects in the Gecko engine.**  
-In Firefox, Javascript running in privileged security context, like extensions files, is called "**chrome code**" and assumed to be trusted ([**"If chrome-privileged code is compromised, the attacker can take over the user’s computer."**](https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html#:~:text=If%20chrome-privileged%20code%20is%20compromised,%20the%20attacker%20can%20take%20over%20the%20user%E2%80%99s%20computer.)). Meanwhile JavaScript loaded from normal web pages is called "**content code**".  
+**The `evt.data.wrappedJSObject` property is a non-standard Firefox-specific object property present in higher-privileged execution contexts, that allows to access the underlying "wrapped" JavaScript object from XPCOM components (i.e. the underlying low-level C++ implementation of Javascript objects in the Gecko engine).**  
+In Firefox, Javascript running in privileged security context, like extensions files, is called "**chrome code**" and it's assumed to be trusted ([**"If chrome-privileged code is compromised, the attacker can take over the user’s computer."**](https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html#:~:text=If%20chrome-privileged%20code%20is%20compromised,%20the%20attacker%20can%20take%20over%20the%20user%E2%80%99s%20computer.)). Meanwhile JavaScript loaded from normal web pages is called "**content code**".  
 But, content code can sometimes reach the chrome code execution context (e.g. think of an object passed inside a `postMessage`!) and that violates security boundaries:
 
 > The security machinery in Gecko ensures that there’s asymmetric access between code at different privilege levels: so for example, content code can’t access objects created by chrome code, but chrome code can access objects created by content.
 However, even the ability to access content objects can be a security risk for chrome code. JavaScript’s a highly malleable language. Scripts running in web pages can add extra properties to DOM objects (also known as expando properties) and even redefine standard DOM objects to do something unexpected. If chrome code relies on such modified objects, it can be tricked into doing things it shouldn’t.
  
-Therefore, before reaching that execution context, Firefox applies a security layer called [***Xray Vision***](https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html) that "wraps" user passed objects and allows the priviledged execution context to literally "see through" the object on any property access and directly use the underlying low-level C++ native implementation, meaning any user-defined expando properties or user redefinitions will be ignored because they exists on the higher-level JavaScript representation only.
+Therefore, before reaching that execution context, Firefox applies a security layer called [***Xray Vision***](https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html) that "wraps" untrusted user objects and allows the privileged execution context to literally "see through" the object on any property access and directly use the underlying low-level C++ native implementation, meaning any user-defined expando properties or user redefinitions will be ignored because they exist on the higher-level JavaScript representation only.
 
-Sometimes however, you actually want to access the full user-defined object, and to do so you need to "[Waive the object](https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html)" (i.e. "unwrapping" the object), and a common way to do so is to use the `wrappedJSObject` property. As such this action is considered unsafe, as per MDN Web Docs:
-> Waivers are transitive: so if you waive Xray vision for an object, then you automatically waive it for all the object’s properties. For example, window.wrappedJSObject.document gets you the waived version of document. To undo the waiver again, call Components.utils.unwaiveXrays(waivedObject).
+Sometimes, however, you actually want to access the full user-defined object, and to do that, you need to "[Waive the object](https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html)" (i.e. "unwrapping" the object), and a common way to do so is to use the `wrappedJSObject` property.  
+As such, this action is considered unsafe, as per MDN Web Docs:
+> Waivers are transitive: so if you waive Xray vision for an object, then you automatically waive it for all the object’s properties. For example, `window.wrappedJSObject.document` gets you the waived version of document. To undo the waiver again, call `Components.utils.unwaiveXrays(waivedObject)`.
 
-Focus on the ***Waivers are transitive***: that's exactly what happens in our case! ***After obtaining the `evt.data.wrappedJSObject` object, all the `options.css`, `options.files`, `options.origin` properties, the object prototype chain, the object instance methods, etc. will be the user defined ones.***  
+Focus on the "***Waivers are transitive***": that's exactly what happens in our case!  
+***After obtaining the `evt.data.wrappedJSObject` object, all the `options.css`, `options.files`, `options.origin` properties, the object prototype chain, the object instance methods, etc. will be the user defined ones.***  
 
-What does that implicates?  
-***We can simply define our custom getters methods on the `evt.data` object to evade in a TOCTOU style the content script validation checks!*** More concretely:
+What does that imply?  
+***We can simply define our custom getter methods on the `evt.data` object to evade in a TOCTOU style the content script validation checks!***  
+More concretely:
 ```js
 var nCalls = { "css": 0 };
 Object.defineProperty(obj, 'css', {
@@ -264,7 +267,7 @@ Object.defineProperty(obj, 'css', {
   }
 });
 ```
-We are defining using `Object.defineProperty` on an arbitrary user-controlled object `obj`, a custom getter for the `css` such that it will return the `safeCss` string value on the first call (i.e. during validation), and the `evilCss` string value on the second call (i.e. when the background script will read the property to forward it to `insertCSS` API).  
+We define on our `evt.data` object a custom getter for the `css` property, such that it will return the `safeCss` string value on the first call (i.e. during validation), and the `evilCss` string value on the second call (i.e. when the background script will read the property to forward it to `insertCSS` API).  
 We can apply the same idea to all other properties and effectively make the content script checks useless.  
 
 **We still have one last problem though: `options` will be defined as `evt.data.wrappedJSObject` only if `evt.data` is falsy**. How do we even pass a "falsy object" that can still be called as such? Aren't all objects truthy by definition in JavaScript? E.g:
@@ -273,35 +276,45 @@ if ({}) console.log("runs");        // "runs"
 if ([]) console.log("also runs");   // "also runs"
 ```
 
-The only exceptions are for `false`, `0`, `null`, `undefined`, and `NaN`. However, those are called **primitive values** and as such they do not have their own properties or methods.  
+The only exceptions are `false`, `0`, `null`, `undefined`, and `NaN`. However, those are called **primitive values** and as such they don't have their own properties and methods.  
 
 How do you even do that??  
-**Let me introduce yet another legacy, deprecated feature: [`document.all`](https://developer.mozilla.org/en-US/docs/Web/API/Document/all)** (it's still supported on all major browsers this time though!).  
-This object is a legacy way to literally access all elements in the document DOM tree, in their order. It's an alternative to `Document.querySelectorAll` and returns an [`HTMLAllCollection`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLAllCollection) object.  
+**Let me introduce yet another legacy deprecated feature**:  
+
+![document.all](./img/tada-documentall.png)  
+
+**The [`document.all`](https://developer.mozilla.org/en-US/docs/Web/API/Document/all) property** (it's still supported on all major browsers this time though!).  
+This is a legacy way to access all elements in the document DOM tree, in their order. It's an alternative to `Document.querySelectorAll` and returns an [`HTMLAllCollection`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLAllCollection) object.  
+
 However, this object is just straight up weird.  
-E.g. what do you think `typeof document.all` returns? Clearly `undefined`, right? What about `document.all instanceof Object` then? Surely `true`, right? What about `if (!document.all) { console.log("wtf!?") }` ?? All objects are truthy by definition, right???? Well try it out yourself:
+For example, what do you think `typeof document.all` returns? Clearly `undefined`, right? What about `document.all instanceof Object` then? Surely `true`, right? What about `if (!document.all) { console.log("wtf!?") }` ?? All objects are truthy by definition, right????  
+Well, try it out yourself:
 
 ```js
-console.log(typeof document.all);                // "undefined"
-console.log(document.all instanceof Object);     // true
-if (document.all) { console.log("all JS objects are truthy by definition"); } else { console.log("wtf!?"); } // "wtf!??"
-console.log(document.all ? "truthy" : "falsy");  // "falsy"
-console.log(document.all == false);              // false
+console.log(document.all instanceof Object);  // true
+console.log(document.all ? "all JS objects are truthy by definition" : "wtf!?");  // "wtf!??"
+console.log(document.all == false);           // false
+console.log(typeof document.all);             // undefined
+console.log(document.all == null);            // true
+console.log(document.all ?? "should be nullish then, right?");  // undefined
 
 // it's even callable!
-document.all("shouldnotbecallableright")     // <div id="shouldnotbecallableright">
+document.all("isitevencallable?")  // <div id="isitevencallable?">
+
+// and even indexable!
+document.all[0]  // <html>
 ```
 
 Those weird behaviors are due to legacy reasons and web compatibility and are documented in MDN [here](https://developer.mozilla.org/en-US/docs/Web/API/HTMLAllCollection#usage_in_javascript).  
 
-***In summary, we can use `document.all` to get a falsy expression on the `const options = evt.data || evt.data.wrappedJSObject;` line, to get a user controllable Waived Xray Vision object, and then we can define our custom getters on it to bypass the content script checks.***  
+***In summary, we can use `document.all` to get a falsy expression on the `const options = evt.data || evt.data.wrappedJSObject;` line, but still have a user controllable Waived Xray Vision object, and so define our custom getters on it to bypass the content script checks.***  
 
 One last obstacle remains: `document.all` in fact returns all elements of the page, meaning that even if we redefine custom getters we'll still have excess properties (i.e. the page html elements) inside the `details` object.  
-Also, given that `details` is defined as `const details = { ...options };`, we'll have `HTMLElement` instances in it and since all `postMessages` (and therefore `browser.runtime.sendMessage`) calls use the [Structured clone algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) on the passed object, it will throw a `DataCloneError: The object could not be cloned.` exception.  
+Also, given that `details` is defined as `const details = { ...options };`, we'll have `HTMLElement` instances in it and since all `postMessages` (and therefore `browser.runtime.sendMessage`) calls use the [Structured clone algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) on the passed object, it will throw a `DataCloneError: The object could not be cloned` exception.  
 
 What about having no html elements at all on the page then? Well, even if we define an empty page, the browser will still at least put the root element `<html>` in the DOM tree, meaning `document.all` will still contain at least that. Let alone the `<script>` tag itself hosting our exploit code.  
 **What about removing \*ALL\* html elements from the DOM then? Like, all of them? Even the script tag itself, even the root `<html>` tag!?**  
-Yes it's possible! (lol)
+Yes, it's possible! (lol)
 
 ```js
 while (document.firstChild) {
@@ -310,14 +323,14 @@ while (document.firstChild) {
 console.log(document.all.length); // 0
 ```
 
-Finally, turns out that in all modern browsers we can manipulate the `document.all` object and the DOM tree such that `document.all` becomes an arbitrary falsy, empty, HTMLAllCollection object that can have arbitrary properties set by javascript or arbitrary named properties set using common DOM clobbering techniques. And it's even callable!
+Finally, **turns out that in all modern browsers we can manipulate the `document.all` object and the DOM tree such that `document.all` becomes an arbitrary falsy, empty, HTMLAllCollection object that can have arbitrary properties** set by javascript or arbitrary named properties set using common DOM clobbering techniques. And it's even callable!
 
 ## CSS Exfiltration
-At this point, the challenge is pretty much solved. Based on that we can achieve CSS injection on the challenge page by passing the crafted `document.all` object with our custom getters to the content script, with a `css` property containing our `@-moz-document` rules to match the flag, and by also passing a `origin: "USER"` property such that `@-moz-document` rules are actually enabled and a `target: { tabId: ... }` property to specify the tab to apply the CSS to (the flag tab will always have `tabId = 1` in the bot).  
-Since I was lenient and put the whole flag in the URL instead of a runtime generated token, you could have even manually exfiltrated the flag by matching each character with multiple reports, but it could have been a bit painful since the the flag is 64 chars long.  
+At this point, the challenge is pretty much solved. From there, we can achieve CSS injection on the challenge page by passing the crafted `document.all` object with our custom getters to the content script, with a `css` property containing our `@-moz-document` rules to match the flag, and by also passing an `origin: "USER"` property such that `@-moz-document` rules are actually enabled and a `target: { tabId: ... }` property to specify the tab to apply the CSS to (the flag tab will always have `tabId = 1` during the bot visit).  
+Since I was lenient and put the whole flag in the URL instead of a runtime generated token, you could have even manually exfiltrated the flag by matching each character with multiple reports, but it could have been a bit painful since the flag is 64 chars long.  
 
-**My final exploit, instead, implements a one-shot solver playing around the CSS selectors Specificity algorithm**: since we will have multiple different `@-moz-document` rules, each one of them trying to match a different probe, e.g. `http://127.0.0.1/?flag?space{a`, `http://127.0.0.1/?flag?space{b`, `http://127.0.0.1/?flag?space{aa`, etc.  
-The problem in having this many same rules, each one of them specifying a slightly different selector and trying to set the `background-image` attribute, will incour into a Specificity conflict and only the most specific rules "wins" the assigment. Only 1 exfiltration request will be triggered.  
+**My final exploit, instead, implements a one-shot solver by playing around with the CSS selectors Specificity algorithm**: since we will have multiple different `@-moz-document` rules, each one of them trying to match a different probe, e.g. `http://127.0.0.1/?flag?space{a`, `http://127.0.0.1/?flag?space{b`, `http://127.0.0.1/?flag?space{aa`, etc.  
+The problem in having this many same rules, each one of them specifying a slightly different selector and trying to set the `background-image` attribute, will incur into a **Specificity conflict** and only the most specific rules "wins" the assignment. Therefore, only 1 exfiltration request will be triggered.  
 I bypassed this restriction with the following payload generation:
 ```js
 let knownFlag = "space{";
