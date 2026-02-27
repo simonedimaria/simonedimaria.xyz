@@ -159,7 +159,7 @@ At that point I was pretty lost, the code was really minimal and I had to someho
 
 That's exactly what I said to myself while overthinking the challenge and immediately after I had the remembrance of a (quite strange) Java behavior that I barely read about in a random tweet months ago while doomscrolling on X, which pointed out how comparing two `URL` objects in Java triggers a DNS resolution 💀  
 
-{{< twitter user="ChShersh" id="1832688521762496747" >}}
+{{< x user="ChShersh" id="1832688521762496747" >}}
 
 **More of that is discussed at the end of the writeup [here](#extra).** 
 
