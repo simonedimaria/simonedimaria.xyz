@@ -128,10 +128,8 @@ script
 
 instead. Here we are using a **newline character** to bypass the check. Since in the Python side `"java\x0Ascript" != "javascript"`, but in the broswer `java%0Ascript` will still be considered a valid url for the `javascript` protocol.
 
-{{< alert >}}
-**Note**  
-Our input get stripped before getting into che sanitizing function, however Python [strip()](https://docs.python.org/3.11/library/stdtypes.html#str.strip) function only removes **leading and trailing characters**.
-{{< /alert >}}
+> [!note]
+> Our input get stripped before getting into che sanitizing function, however Python [strip()](https://docs.python.org/3.11/library/stdtypes.html#str.strip) function only removes **leading and trailing characters**.
 
 Even though this is a common bypass, I never actually knew why this was working. Researching for bypasses for the javascript pseudo protocol I've found [this blog](https://aszx87410.github.io/beyond-xss/en/ch1/javascript-protocol/) which was helpful to me to find out the reason why whitespaces are allowed in this situation and find out the bypass for the next filter. The reason seems to rely in the [URL spec standard](https://url.spec.whatwg.org/) which removes any ASCII tab or newline from inputs.
 
@@ -154,10 +152,8 @@ Using the **BACKSPACE** (`%08`) character allowed me to bypass the python filter
 
 This was probably the easiest check to bypass, since javascript is very permissive in expressions that can be created even with a few symbols, it is no coincidence that there are many esoteric languages ​​on javascript such as [JSFuck](https://jsfuck.com/) that manage to create valid expressions using only a few symbols.
 
-{{<alert "lightbulb">}}
-**Fun Fact**  
-[here](http://aem1k.com/aurebesh.js/) I've found some of the funniest javascript esoteric shit expression while doing this challenge. Like...how the fuck i can popup alert with fucking Egyptian hieroglyphs, but a simple NULL byte will break the shit out of the payload??
-{{</alert>}}
+> [!info]
+> [here](http://aem1k.com/aurebesh.js/) I've found some of the funniest javascript esoteric shit expression while doing this challenge. Like...how the fuck i can popup alert with fucking Egyptian hieroglyphs, but a simple NULL byte will break the shit out of the payload??
 
 However, searching brainlessly "XSS payloads without parentheses" was enough since i found many working payloads inside [this repo](https://github.com/RenwaX23/XSS-Payloads/blob/master/Without-Parentheses.md). I was also able to double encode inside the payload after the `javascript:` since javascript was decoding it.
 

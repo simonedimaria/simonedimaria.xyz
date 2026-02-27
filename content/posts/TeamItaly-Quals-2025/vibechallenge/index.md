@@ -9,9 +9,8 @@ showHero: true
 
 # TeamItaly 2025 Quals - VibeChallenge 
 
-{{< alert icon="fire" >}}
-First blooding this challenge put me in first place for the web players selection for the official TeamItaly 2025 qualification event! :)
-{{< /alert >}}
+> [!tip]
+> First blooding this challenge put me in first place for the web players selection for the official TeamItaly 2025 qualification event! :)
 
 ## Description
 > A web challenge built on instinct, caffeine, and zero planning. Everything kind of works — and that’s good enough. Follow the vibes. Something might happen.
@@ -154,9 +153,8 @@ Since the bio content is sanitized with `htmlspecialchars` there's no free XSS f
 
 The image upload functionality is pretty much just boilerplate, so I'll skip it. Just something to know is that the `/upload_image.php` will handle the form submission and save the image in the db with an UUID filename (so no html injection or header injection within the filename). Then the same image can be viewed via the `/image/<uuid>` endpoint, where nginx will take the UUID from the path and rewrite it to `/image.php?id=<uuid>`. 
 
-{{< alert >}}
-The UUID parameter passed in `/image` is validated by nginx with the provided regex, moreover direct access to `/image.php` is denied by nginx, but if that would have been of our interest we could have kinda bypassed it by clobbering the `?id` parameter in the nginx rewrite. In the screenshot below I upload the `babelo.png` image that gives me the `7ab2...` uuid, and the `floridamanspankinghimself.png` image that gives me the `90aa...` uuid, then I access the `/image/7ab2...?id=90aa...` endpoint and the second image is served instead of the first one. In the apache logs i logged the full request URI in `image.php` and it shows the clobbering. I could've also used whatever value as the `id` parameter because the validation happens only on the nginx side.
-{{< /alert >}}
+> [!note]
+> The UUID parameter passed in `/image` is validated by nginx with the provided regex, moreover direct access to `/image.php` is denied by nginx, but if that would have been of our interest we could have kinda bypassed it by clobbering the `?id` parameter in the nginx rewrite. In the screenshot below I upload the `babelo.png` image that gives me the `7ab2...` uuid, and the `floridamanspankinghimself.png` image that gives me the `90aa...` uuid, then I access the `/image/7ab2...?id=90aa...` endpoint and the second image is served instead of the first one. In the apache logs i logged the full request URI in `image.php` and it shows the clobbering. I could've also used whatever value as the `id` parameter because the validation happens only on the nginx side.
 
 ![clobbering the id parameter](./img/clobbering_id_parameter.png) 
 
@@ -261,10 +259,9 @@ Then, the bot will do the following:
 
 For anyone with a bit of client side challenge experience knows that it's not too common to have the bot visit our controlled page before putting flag or any actions in general, therefore it can be an hint of what to search for.  
 
-{{< alert >}}
-A first idea was some sort of [session fixation](https://owasp.org/www-community/attacks/Session_fixation#:~:text=The%20attack%20consists%20of%20obtaining%20a%20valid%20session%20ID%20%28e.g.%20by%20connecting%20to%20the%20application%29%2C%20inducing%20a%20user%20to%20authenticate%20himself%20with%20that%20session%20ID%2C%20and%20then%20hijacking%20the%20user-validated%20session%20by%20the%20knowledge%20of%20the%20used%20session%20ID.), by forcing the bot to login with a user we know, and write the flag to the bio of that user, and finally retrieving it later. Clearly, such attack is not trivially possible on modern browsers, but some CSRF-vulnerable applications could allow it.
-While looking for such possibility in PHP I found the [`session.use_trans_sid`](https://www.php.net/manual/en/session.configuration.php#ini.session.use-trans-sid) option, which [allows to pass the PHPSESSID via as URL param](https://www.php.net/manual/en/session.idpassing.php#:~:text=PHP%20is%20capable%20of%20transforming%20links%20transparently.%20If%20the%20run-time%20option%20session.use_trans_sid%20is%20enabled%2C%20relative%20URIs%20will%20be%20changed%20to%20contain%20the%20session%20id%20automatically.%20). However, this option is disabled by default and indeed the PHP documentation also states the security risks around it.
-{{< /alert >}}
+> [!note]
+> A first idea was some sort of [session fixation](https://owasp.org/www-community/attacks/Session_fixation#:~:text=The%20attack%20consists%20of%20obtaining%20a%20valid%20session%20ID%20%28e.g.%20by%20connecting%20to%20the%20application%29%2C%20inducing%20a%20user%20to%20authenticate%20himself%20with%20that%20session%20ID%2C%20and%20then%20hijacking%20the%20user-validated%20session%20by%20the%20knowledge%20of%20the%20used%20session%20ID.), by forcing the bot to login with a user we know, and write the flag to the bio of that user, and finally retrieving it later. Clearly, such attack is not trivially possible on modern browsers, but some CSRF-vulnerable applications could allow it.
+> While looking for such possibility in PHP I found the [`session.use_trans_sid`](https://www.php.net/manual/en/session.configuration.php#ini.session.use-trans-sid) option, which [allows to pass the PHPSESSID via as URL param](https://www.php.net/manual/en/session.idpassing.php#:~:text=PHP%20is%20capable%20of%20transforming%20links%20transparently.%20If%20the%20run-time%20option%20session.use_trans_sid%20is%20enabled%2C%20relative%20URIs%20will%20be%20changed%20to%20contain%20the%20session%20id%20automatically.%20). However, this option is disabled by default and indeed the PHP documentation also states the security risks around it.
 
 Apart from that, no particular user interaction is made, so we have to invent something with what we have.
 

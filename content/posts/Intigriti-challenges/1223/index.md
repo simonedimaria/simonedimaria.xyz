@@ -12,13 +12,10 @@ showHero: false
 
 <img src="./img/intigriti1223_banner.jpeg" alt="Intigriti Monthly Challenge 1223" width="100%"/>
 
-{{< alert icon="fire" >}}
-**Update**:  
-This writeup was selected as the winner of the Intigriti December Challenge (1223) and was awarded a prize of 50€ on Intigriti swags --> https://x.com/intigriti/status/1737861726517784601 .  
-  
-
-At the moment of writing, this writeup it's also part of the HackTricks wiki on the "PHP Tricks" section --> https://book.hacktricks.wiki/en/network-services-pentesting/pentesting-web/php-tricks-esp/index.html#redos-bypass
-{{< /alert >}}
+> [!tip]
+> This writeup was selected as the winner of the Intigriti December Challenge (1223) and was awarded a prize of 50€ on Intigriti swags --> https://x.com/intigriti/status/1737861726517784601 .  
+>
+> At the moment of writing, this writeup it's also part of the HackTricks wiki on the "PHP Tricks" section --> https://book.hacktricks.wiki/en/network-services-pentesting/pentesting-web/php-tricks-esp/index.html#redos-bypass
 
 
 ## TL;DR

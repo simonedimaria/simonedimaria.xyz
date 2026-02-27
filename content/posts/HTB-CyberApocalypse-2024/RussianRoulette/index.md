@@ -130,9 +130,8 @@ Sounds interesting!
 
 **NOTE**: Starting from Solidity 0.8.24 ("Cancun" upgrade), it'll change the behavior of "selfdestruct". It will no longer clear the contract code unless it's called on the deploying transaction. https://twitter.com/solidity_lang/status/1750775408013046257
 
-{{< alert "circle-info" >}}
-**Fun Fact**: did you know that `SELFDESTRUCT` was once called `SUICIDE` and there is a `SELFDESTRUCT` alias for `SUICIDE` in Solidity? Here's the official EIP: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-6.md
-{{< /alert >}}
+> [!info] Fun Fact
+> Did you know that `SELFDESTRUCT` was once called `SUICIDE` and there is a `SELFDESTRUCT` alias for `SUICIDE` in Solidity? Here's the official EIP: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-6.md
 
 Having understood how `selfdestruct()` works in the Solidity version specified in the contract, we need to understand in what circumstances we will be rich.
 

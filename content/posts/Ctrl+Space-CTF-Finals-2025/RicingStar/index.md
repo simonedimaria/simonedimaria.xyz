@@ -216,9 +216,8 @@ The feature as MDN documents, it's obviously non-standard, and was deprecated in
 
 ***And since we can define "USER" origin stylesheets within `insertCSS` API, we could use it to exfiltrate the flag from the challenge page URL.***  
 
-{{< alert "circle-info" >}}  
-Honestly, I think it’s kinda okay to have this as a feature in user stylesheets, but it really should be limited to domain matching only. Right now, though, we can clearly match full URLs with it, even using regexes!  
-{{< /alert >}}
+> [!info]
+> Honestly, I think it’s kinda okay to have this as a feature in user stylesheets, but it really should be limited to domain matching only. Right now, though, we can clearly match full URLs with it, even using regexes!
 
 No CSP is applied to the challenge page, meaning the following rule will be enough to tell us whether the flag has a `0` character in the 2nd place:
 ```css
@@ -611,4 +610,3 @@ if __name__ == "__main__":
 ## Flag
 
 > `space{s0_much_leg4cy_0ut_there_4nyw4y_h0w_d0_y0u_c4ll_th4t??_ucssi??}`
-

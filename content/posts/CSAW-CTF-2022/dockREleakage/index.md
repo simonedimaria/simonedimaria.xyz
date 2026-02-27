@@ -50,8 +50,7 @@ layer
 Find the rest of the flag by yourself!
 ```
 
-{{< alert "fire" >}}
-Check out also this nice tool to explore docker image layers: [https://github.com/wagoodman/dive](https://github.com/wagoodman/dive)
-{{< /alert >}}
+> [!tip]
+> Check out also this nice tool to explore docker image layers: [https://github.com/wagoodman/dive](https://github.com/wagoodman/dive)
 
 Flag: `flag{n3v3r_l34v3_53n5171v3_1nf0rm4710n_unpr073c73d_w17h1n_7h3_d0ck3rf1l3}`

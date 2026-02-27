@@ -7,10 +7,8 @@ difficulty: "medium"
 tags: ["writeup", "DNS rebinding", "race condition", "TOCTOU"]
 ---
 
-{{< alert icon="fire" >}}
-**Update**:  
-This writeup was selected as one of the winners of the Iris CTF 2025 writeup competition --> https://discord.com/channels/1051808836593397781/1051815606732738590/1333226270699294800  
-{{< /alert >}}
+> [!tip]
+> This writeup was selected as one of the winners of the Iris CTF 2025 writeup competition --> https://discord.com/channels/1051808836593397781/1051815606732738590/1333226270699294800
 
 ## TL;DR
 The challenge consisted in exploiting a **TOCTOU** race condition by using **DNS rebinding** to bypass `URL.equals()` check in Java. 
@@ -136,10 +134,8 @@ Essentially, this endpoint registers a new webhook configuration, unless it alre
 2) The `/webhook` endpoint will accept `POST` requests with a `hook` parameter. It will iterate over the `State.arr` global list of previously created webhook configurations, and if it finds a matching `hook` URL, it will replace the `_DATA_` placeholder in the template with the content of the supplied body, and send a POST request to the given `hook` URL using `HttpURLConnection` with the new body. If the `hook` URL is not found in the `State.arr`, it will return a json response of `{"result": "fail"}`.
 
 
-{{< alert >}}
-**Note**  
-Both endpoints do not provide SSRF protections, however it's irrelevant for us as there are no additional services running on the server.
-{{< /alert >}}
+> [!note]
+> Both endpoints do not provide SSRF protections, however it's irrelevant for us as there are no additional services running on the server.
 
 
 ## Vulnerability discovery
@@ -246,10 +242,8 @@ sequenceDiagram
 
 A trick I used to increase my chances of hitting the exact window between **Step 1** and **Step 4** was to send a large payload in the body to be processed, so that **L34** would have a slightly longer execution time to give us the possibility of hitting the cache revalidation switch in a larger window.
 
-{{< alert >}}
-**NOTE**  
-An interesting rabbit hole would be to understand how `String.replace()` is performed internally by Java/Kotlin, since there could be the possibility of using some classic ReDoS tricks to increase the execution time of `h.template.replace("_DATA_", body)` even more.
-{{< /alert >}}
+> [!note]
+> An interesting rabbit hole would be to understand how `String.replace()` is performed internally by Java/Kotlin, since there could be the possibility of using some classic ReDoS tricks to increase the execution time of `h.template.replace("_DATA_", body)` even more.
 
 ## Exploitation (cry and pray)
 Having gathered all the elements to exploit, I proceeded to write the following python script:
