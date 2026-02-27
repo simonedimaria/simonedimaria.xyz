@@ -1,4 +1,4 @@
 [submodule "themes/blowfish"]
   	path = themes/blowfish
 	url = https://github.com/simonedimaria/blowfish.git
-	branch = main
+	branch = upstream-main-with-local-fixes
